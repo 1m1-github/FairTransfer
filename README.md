@@ -30,6 +30,4 @@ This smart contract thus allows for the "fairest" possible compensation.
 
 - `beneficiary` is set by the `creator` - a single account
 
-- `beneficiary` has to send dApp txn fee (currently 0.001 ALGO) for `withdraw`
-
 - `update` ~ change `end` ~ needs to be accompanied with coins such that withdraw rate does not worsen ~ new `end` has to be after old `end` and after now
