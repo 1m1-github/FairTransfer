@@ -22,12 +22,14 @@ This smart contract thus allows for the "fairest" possible compensation.
 
 - `cancancel` - set by `creator`: allows `creator` to withdraw all coins, i.e. to cancel the vesting (use case `true`: imagine the vesting is for a salary of an employee and that employee quits / use case `false`: imagine the vesting is a founder of a project and the coins are guaranteed)
 
-- `start` timestamp is immutable
+- `start` timestamp is immutable [epoch]
 
-- `end` timestamp ~ immutable? or allow `creator` to update e.g. by adding coins? or rather have the `creator` make new dApp for new vesting (e.g. for a the salary use case, should the company create new contracts everyweek? or allow updating? if allow updating, what if creator adds few coins but makes withdraw rate slow by extending `end` ~ maybe update is top-up, i.e. enough coins need to be added to change end)
+- `end` timestamp [epoch] ~ has to after now  ~ after `end`, `beneficiary` can withdraw all coins
 
-- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `end`-`start`)
+- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `end`-`start`) ~ rate = coins / (end - start)
 
 - `beneficiary` is set by the `creator` - a single account
 
 - `beneficiary` has to send dApp txn fee (currently 0.001 ALGO) for `withdraw`
+
+- `update` ~ change `end` ~ needs to be accompanied with coins such that withdraw rate does not worsen ~ new `end` has to be after old `end` and after now
