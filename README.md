@@ -15,3 +15,19 @@ Assume the company has deposited coins for 1 week (7\*24\*60\*60 secs). After a
 In case the employee stops working, the company can cancel the smart contract.  
 
 This smart contract thus allows for the "fairest" possible compensation.
+
+## Details
+
+- works with any ASA
+
+- `cancancel` - set by `creator`: allows `creator` to withdraw all coins, i.e. to cancel the vesting (use case `true`: imagine the vesting is for a salary of an employee and that employee quits / use case `false`: imagine the vesting is a founder of a project and the coins are guaranteed)
+
+- `start` timestamp is immutable
+
+- no `end` timestamp ~ dApp is open perpetually allowing top-up (e.g. employer could fill dApp every week and employee can withdraw whenever)
+
+- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `start` timestamp)
+
+- `beneficiary` is set by the `creator` - a single account
+
+- `beneficiary` has to send dApp txn fee (currently 0.001 ALGO) for `withdraw`
