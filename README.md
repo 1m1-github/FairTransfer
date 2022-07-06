@@ -24,9 +24,9 @@ This smart contract thus allows for the "fairest" possible compensation.
 
 - `start` timestamp is immutable
 
-- no `end` timestamp ~ dApp is open perpetually allowing top-up (e.g. employer could fill dApp every week and employee can withdraw whenever)
+- `end` timestamp ~ immutable? or allow `creator` to update e.g. by adding coins? or rather have the `creator` make new dApp for new vesting (e.g. for a the salary use case, should the company create new contracts everyweek? or allow updating? if allow updating, what if creator adds few coins but makes withdraw rate slow by extending `end` ~ maybe update is top-up, i.e. enough coins need to be added to change end)
 
-- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `start` timestamp)
+- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `end`-`start`)
 
 - `beneficiary` is set by the `creator` - a single account
 
