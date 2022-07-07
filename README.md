@@ -20,13 +20,15 @@ This smart contract thus allows for the "fairest" possible compensation.
 
 - works with any ASA
 
+- `init` - setup dApp including funding of coins
+
 - `cancancel` - set by `creator`: allows `creator` to withdraw all coins, i.e. to cancel the vesting (use case `true`: imagine the vesting is for a salary of an employee and that employee quits / use case `false`: imagine the vesting is a founder of a project and the coins are guaranteed)
 
-- `start` timestamp is immutable [epoch]
+- `start` timestamp [epoch] ~ def set to create time ~ reset to current time on each `withdraw`
 
 - `end` timestamp [epoch] ~ has to after now  ~ after `end`, `beneficiary` can withdraw all coins
 
-- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `end`-`start`) ~ rate = coins / (end - start)
+- `withdraw` method always withdraws full eligible amount (pro-rata current timestamp vs `end`-`start`) ~ rate = coins / (end - start) ~ resets `start`
 
 - `beneficiary` is set by the `creator` - a single account
 

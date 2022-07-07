@@ -1,0 +1,307 @@
+#pragma version 5
+
+// global state
+// start = last withdraw ~ def create time
+// orin # coins
+// end
+
+// withdraw sets new start
+// update has to at least not worsen ben rate
+
+////////////////
+// Handle each possible OnCompletion type. We don't have to worry about
+// handling ClearState, because the ClearStateProgram will execute in that
+// case, not the ApprovalProgram.
+
+txn OnCompletion
+int NoOp
+==
+bnz handle_noop
+
+txn OnCompletion
+int OptIn
+==
+bnz handle_optin
+
+txn OnCompletion
+int CloseOut
+==
+bnz handle_closeout
+
+txn OnCompletion
+int UpdateApplication
+==
+bnz handle_updateapp
+
+txn OnCompletion
+int DeleteApplication
+==
+bnz handle_deleteapp
+
+// Unexpected OnCompletion value. Should be unreachable.
+b decline
+////////////////
+
+
+////////////////
+// main part of code: NoOp
+// 2 cases each with 2 subcases: lock (algo or asa), unlock (algo or asa)
+
+handle_noop:
+
+txna ApplicationArgs 0
+byte "init"
+==
+bnz handle_init
+
+txna ApplicationArgs 0
+byte "withdraw"
+==
+bnz handle_withdraw
+
+txna ApplicationArgs 0
+byte "update"
+==
+bnz handle_update
+
+// Unexpected first arg
+b decline
+////////////////
+
+////////////////
+handle_init:
+// args: cancancel, start, end, beneficiary
+
+// only if not run before
+int 0
+byte "CANCANCEL"
+app_global_get_ex
+bnz decline
+pop
+
+// only creator can run
+txn Sender
+global CreatorAddress
+==
+assert
+
+// 1st txn is ALGO send to this app for ASA opt-in
+// int 0
+// gtxns TypeEnum
+// int pay
+// ==
+// int 0
+// gtxns Amount
+// int 101000
+// ==
+// &&
+// assert
+
+// 2nd of 2 txns
+txn GroupIndex
+// int 1
+int 0
+==
+global GroupSize
+// int 3
+int 2
+==
+&&
+assert
+
+// 3rd txn is asset send to this app for ASA in --foreign-asset
+// int 2
+int 1
+gtxns TypeEnum
+int axfer
+==
+// int 2
+int 1
+gtxns XferAsset
+txna Assets 0
+==
+&&
+assert
+
+// end is after now
+txna ApplicationArgs 3
+btoi
+global LatestTimestamp
+>
+bz decline
+
+// set global state
+byte "CANCANCEL"
+txna ApplicationArgs 1
+btoi
+app_global_put
+
+byte "START"
+global LatestTimestamp
+app_global_put
+
+byte "END"
+txna ApplicationArgs 3
+btoi
+app_global_put
+
+byte "BENEFICIARY"
+txna Accounts 1
+app_global_put
+
+byte "ORIG_NUM_COINS"
+gtxn 1 AssetAmount
+app_global_put
+
+// opt-into ASA
+itxn_begin
+int axfer
+itxn_field TypeEnum
+global CurrentApplicationAddress
+itxn_field AssetReceiver
+txna Assets 0
+itxn_field XferAsset
+int 0
+itxn_field AssetAmount
+itxn_submit
+
+b approve
+
+////////////////
+
+////////////////
+handle_withdraw:
+
+// single txn
+global GroupSize
+int 1
+==
+assert
+
+// global to scratch
+byte "BENEFICIARY"
+app_global_get
+store 0
+
+byte "START"
+app_global_get
+store 10
+
+byte "END"
+app_global_get
+store 11
+
+// only BENEFICIARY can run
+txn Sender
+load 0
+==
+assert
+
+// calc withdrawal amount
+// works up to which timestamp? (depends on accuracy [100000])
+global LatestTimestamp
+load 10
+-
+int 100000
+*
+load 11
+load 10
+-
+/
+global CurrentApplicationAddress
+txna Assets 0
+asset_holding_get AssetBalance
+bz decline
+*
+int 100000
+/
+store 1
+
+// send ASA
+itxn_begin
+int axfer
+itxn_field TypeEnum
+load 0
+itxn_field AssetReceiver
+txna Assets 0
+itxn_field XferAsset
+load 1
+itxn_field AssetAmount
+itxn_submit
+
+// reset start in global state
+byte "START"
+global LatestTimestamp
+app_global_put
+
+b approve
+////////////////
+
+
+////////////////
+handle_update:
+// args: end
+
+// only creator can run
+
+// 1st of 2 txns
+
+// 2nd txn is asset send to this app for ASA in --foreign-asset
+
+// withdrawal rate cannot worsen
+
+// new end is after now and after old end
+
+// update end in global state
+
+// decline until implemented
+b decline
+////////////////
+
+///////////////
+// Update only by creator - for now
+// TODO maybe make updating impossible for safety and assurance
+handle_updateapp:
+
+global GroupSize
+int 1
+==
+global CreatorAddress
+txn Sender
+==
+&&
+bnz approve
+b decline
+///////////////
+
+
+///////////////
+// handle closeOut, cannot delete app, no decline
+handle_closeout:
+handle_deleteapp:
+b decline
+///////////////
+
+///////////////
+// handle opt-in
+handle_optin:
+b approve
+///////////////
+
+////////////////
+// end branches
+decline:
+int 0
+return
+
+approve:
+int 1
+return
+////////////////
+
+
+////////////////
+// fyi
+// Txn.Accounts[0] is sender of txn
+// Txn.Apps[0] is own app
+////////////////
