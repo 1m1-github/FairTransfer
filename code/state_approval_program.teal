@@ -289,9 +289,10 @@ txna Assets 0
 assert
 
 // withdrawal rate cannot worsen
-// old rate = (old_END - START) / old_amount
-// new rate = (new_END - START) / (old_amount + extra_amount)
-// algebra: old_amount*new_END - old_amount*old_END - extra_amount*old_END + extra_amount*START >= 0
+// old rate = old_amount / (old_END - START)
+// new rate = (old_amount + extra_amount) / (new_END - START)
+// algebra: 0 <= old_amount*new_END - old_amount*old_END - extra_amount*old_END + extra_amount*START
+// algebra: 0 <= old_amount*old_END - old_amount*new_END + extra_amount*old_END - extra_amount*START
 
 // old_amount
 global CurrentApplicationAddress
@@ -321,19 +322,19 @@ store 5
 
 // check equation
 load 1
-load 2
+load 3
 *
 load 1
-load 3
+load 2
 *
 -
 load 4
 load 3
 *
--
++
 load 4
 load 5
-+
+-
 int 0
 >=
 assert
