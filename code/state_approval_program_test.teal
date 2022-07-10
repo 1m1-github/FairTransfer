@@ -1,0 +1,14 @@
+#pragma version 6
+
+txn OnCompletion
+int OptIn
+==
+bnz approve
+
+byte "x"
+gtxna 0 ApplicationArgs 0
+app_global_put
+
+approve:
+int 1
+return

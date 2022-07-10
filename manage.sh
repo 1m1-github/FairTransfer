@@ -1,4 +1,5 @@
 // https://developer.algorand.org/docs/run-a-node/setup/install/#sync-node-network-using-fast-catchup
+// chrome://inspect/#devices
 // global state
 cancancel: uint64 // bool (0=false)
 start: uint64 // unix timestamp
@@ -13,13 +14,13 @@ export TXNS_DIR=./txns
 export SYSTEM_APPROVAL_FILE=$CODE_DIR/state_approval_program.teal
 export SYSTEM_CLEAR_FILE=$CODE_DIR/state_clear_program.teal
 export CREATOR=2I2IXTP67KSNJ5FQXHUJP5WZBX2JTFYEBVTBYFF3UUJ3SQKXSZ3QHZNNPY
-export APP_ID=98699947
-export APP_ACCOUNT=O5AJICLQUOJJS2GEFFBPZIAADIH3CWQUVMZ26OXQQ6BBASBAJ4DX5FWVCY
-export ASA=91697272
+export APP_ID=98989242
+export APP_ACCOUNT=YILUOIY5R2UFKHA4OGLNWNPNOMSJVXMBALND2GQBOB3W3LAJLHOKFHUQBQ
+export ASA=92125658
 export CANCANCEL=0
 export END=1657155598
 export NEW_END=
-export BENEFICIARY=VHDMPEWDLWENHMRPH4MJBW6ADTFBRRRZ6UTZT7OXTTIPBUNK3RVKLBRK6A
+export BENEFICIARY=FYMC4AQVEVEP4ZJ4G6KRBF5T7O3EJZIISDA2QP4XU2RXGQAGSU6KYILLE4
 export AMOUNT=100
 export NEW_AMOUNT=
 
@@ -32,7 +33,7 @@ goal account new -w $WALLET
 goal clerk send -a 1000000 -f $CREATOR -t $A -w $WALLET
 
 // create
-goal app create --creator $CREATOR --approval-prog $SYSTEM_APPROVAL_FILE --clear-prog $SYSTEM_CLEAR_FILE --global-byteslices 1 --global-ints 3 --local-byteslices 0 --local-ints 0 --extra-pages 0 --on-completion OptIn -w $WALLET
+goal app create --creator $CREATOR --approval-prog $SYSTEM_APPROVAL_FILE_TEST --clear-prog $SYSTEM_CLEAR_FILE --global-byteslices 1 --global-ints 3 --local-byteslices 0 --local-ints 0 --on-completion OptIn -w $WALLET
 goal app info --app-id $APP_ID
 
 goal clerk send --amount 100000 --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET
@@ -54,13 +55,12 @@ goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/i
 goal clerk rawsend --filename $TXNS_DIR/init.stxn
 
 // withdraw
-goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset $ASA --wallet $WALLET --out=$TXNS_DIR/withdraw.stxn
-goal app call --app-id=$APP_ID --from $CREATOR --app-arg="str:withdraw" --foreign-asset $ASA --wallet $WALLET --out=$TXNS_DIR/withdraw.stxn
+goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/withdraw.stxn
 goal clerk dryrun -t $TXNS_DIR/withdraw.stxn --dryrun-dump -o $TXNS_DIR/dryrun.json
 tealdbg debug $SYSTEM_APPROVAL_FILE -d $TXNS_DIR/dryrun.json --group-index 0
 
 // update
-goal app call --app-id=APP_ID --from $CREATOR --app-arg="str:update" --app-arg="int:$NEW_END" --wallet $WALLET --out=$TXNS_DIR/update_call.stxn
+goal app call --app-id=APP_ID --from $CREATOR --app-arg="str:update" --app-arg="int:$NEW_END" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/update_call.stxn
 goal asset send --amount $NEW_AMOUNT --assetid $ASA --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET --out=$TXNS_DIR/update_send.stxn
 cat $TXNS_DIR/update_call.stxn $TXNS_DIR/update_send.stxn > $TXNS_DIR/combinedtransactions.txn
 goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn

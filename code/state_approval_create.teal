@@ -1,0 +1,161 @@
+#pragma version 6
+
+txn OnCompletion
+int NoOp
+==
+bnz handle_noop
+
+txn OnCompletion
+int OptIn
+==
+bnz handle_optin
+
+txn OnCompletion
+int CloseOut
+==
+bnz handle_closeout
+
+txn OnCompletion
+int UpdateApplication
+==
+bnz handle_updateapp
+
+txn OnCompletion
+int DeleteApplication
+==
+bnz handle_deleteapp
+
+// Unexpected OnCompletion value. Should be unreachable.
+b decline
+////////////////
+
+
+////////////////
+handle_noop:
+
+// opt-into ASA
+itxn_begin
+int axfer
+itxn_field TypeEnum
+global CurrentApplicationAddress
+itxn_field AssetReceiver
+txna Assets 0
+itxn_field XferAsset
+int 0
+itxn_field AssetAmount
+itxn_submit
+
+// create new dapp
+itxn_begin
+int appl
+itxn_field TypeEnum
+byte base64 BiAFAAEEAqCNBiYECUNBTkNBTkNFTAVTVEFSVANFTkQLQkVORUZJQ0lBUlkxGSISQAAgMRkjEkAB1jEZJRJAAcwxGSQSQAG3MRmBBRJAAb1CAcA2GgCABGluaXQSQAAyNhoAgAh3aXRoZHJhdxJAAIk2GgCABnVwZGF0ZRJAAOQ2GgCABmNhbmNlbBJAAUNCAYEiKGVAAXtIMQAyCRJEMwAQIxIzAAiBqKIMEhBEMRYjEjIEgQMSEEQzAhAkEjMCETYwABIQRDYaAhcyBw1BAUIoNhoBF2cpMgdnKjYaAhdnKzYcAWexJLIQMgqyFDYwALIRIrISs0IBGzIEIxJEK2Q1AClkNQoqZDULMQA0ABJEiAAgNQE0AUEA+LEkshA0ALIUNjAAshE0AbISsykyB2dCAOEyBzQLDkAAHTIHNAoJIQQLNAs0CgkKMgo2MABwAEEAvwshBAqJMgo2MABwAEEAsIkyCTEAEkQiKGVESDIEJRIxFiISEEQzARAkEjMBETYwABIQRDIKNjAAcABBAII1ATYaARc1AipkNQMzARI1BClkNQU0ATQCCzQBNAMLCTQENAMLCTQENAUIIg9ENhoBFzIHDUEASio2GgEXZ0IAQzIEIxIyCTEAEhBEKGRBADGxJLIQMgmyFDYwALIRMgo2MABwAEEAGrISs0IAFjIEIxIyCTEAEhBEQgAIQgADQgACIkMjQw==
+itxn_field ApprovalProgram
+byte base64 BoEB
+itxn_field ClearStateProgram
+int 3
+itxn_field GlobalNumUint
+int 1
+itxn_field GlobalNumByteSlice
+int 0
+itxn_field LocalNumUint
+int 0
+itxn_field LocalNumByteSlice
+int 1
+itxn_field OnCompletion
+itxn_submit
+
+// new dApp addr
+itxn CreatedApplicationID
+app_params_get AppAddress
+bz decline
+store 1
+
+// send dapp algo
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 1
+itxn_field Receiver
+int 201000
+itxn_field Amount
+
+// init new dapp
+itxn_next
+int appl
+itxn_field TypeEnum
+itxn CreatedApplicationID
+itxn_field ApplicationID
+txna ApplicationArgs 0
+itxn_field ApplicationArgs
+txna ApplicationArgs 1
+itxn_field ApplicationArgs
+txna Accounts 1
+itxn_field Accounts
+txna Assets 0
+itxn_field Assets
+
+// send dapp asa
+itxn_next
+int axfer
+itxn_field TypeEnum
+load 1
+itxn_field AssetReceiver
+txna Assets 0
+itxn_field XferAsset
+gtxn 2 AssetAmount
+itxn_field AssetAmount
+itxn_submit
+
+b approve
+
+////////////////
+
+
+///////////////
+// Update only by creator - for now
+// TODO maybe make updating impossible for safety and assurance
+handle_updateapp:
+
+global GroupSize
+int 1
+==
+global CreatorAddress
+txn Sender
+==
+&&
+bnz approve
+b decline
+///////////////
+
+
+///////////////
+// handle closeOut, cannot delete app, no decline
+handle_deleteapp:
+b decline
+///////////////
+
+///////////////
+// handle opt-in
+handle_closeout:
+handle_optin:
+b approve
+///////////////
+
+////////////////
+// end branches
+decline:
+int 0
+return
+
+approve:
+int 1
+return
+////////////////
+
+
+////////////////
+// fyi
+// Txn.Accounts[0] is sender of txn
+// Txn.Apps[0] is own app
+////////////////

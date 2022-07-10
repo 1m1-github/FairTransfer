@@ -1,9 +1,10 @@
-#pragma version 5
+#pragma version 6
 
 // global state
 // start = last withdraw ~ def create time
 // orin # coins
 // end
+// asa id
 
 // withdraw sets new start
 // update has to at least not worsen ben rate
@@ -44,9 +45,6 @@ b decline
 
 
 ////////////////
-// main part of code: NoOp
-// 2 cases each with 2 subcases: lock (algo or asa), unlock (algo or asa)
-
 handle_noop:
 
 txna ApplicationArgs 0
@@ -64,13 +62,18 @@ byte "update"
 ==
 bnz handle_update
 
+txna ApplicationArgs 0
+byte "cancel"
+==
+bnz handle_cancel
+
 // Unexpected first arg
 b decline
 ////////////////
 
 ////////////////
 handle_init:
-// args: cancancel, start, end, beneficiary
+// args: init, cancancel, end, beneficiary
 
 // only if not run before
 int 0
@@ -86,45 +89,37 @@ global CreatorAddress
 assert
 
 // 1st txn is ALGO send to this app for ASA opt-in
-// int 0
-// gtxns TypeEnum
-// int pay
-// ==
-// int 0
-// gtxns Amount
-// int 101000
-// ==
-// &&
-// assert
+gtxn 0 TypeEnum
+int pay
+==
+gtxn 0 Amount
+int 201000
+==
+&&
+assert
 
 // 2nd of 2 txns
 txn GroupIndex
-// int 1
-int 0
+int 1
 ==
 global GroupSize
-// int 3
-int 2
+int 3
 ==
 &&
 assert
 
 // 3rd txn is asset send to this app for ASA in --foreign-asset
-// int 2
-int 1
-gtxns TypeEnum
+gtxn 2 TypeEnum
 int axfer
 ==
-// int 2
-int 1
-gtxns XferAsset
+gtxn 2 XferAsset
 txna Assets 0
 ==
 &&
 assert
 
 // end is after now
-txna ApplicationArgs 3
+txna ApplicationArgs 2
 btoi
 global LatestTimestamp
 >
@@ -141,16 +136,12 @@ global LatestTimestamp
 app_global_put
 
 byte "END"
-txna ApplicationArgs 3
+txna ApplicationArgs 2
 btoi
 app_global_put
 
 byte "BENEFICIARY"
 txna Accounts 1
-app_global_put
-
-byte "ORIG_NUM_COINS"
-gtxn 1 AssetAmount
 app_global_put
 
 // opt-into ASA
@@ -199,23 +190,12 @@ assert
 
 // calc withdrawal amount
 // works up to which timestamp? (depends on accuracy [100000])
-global LatestTimestamp
-load 10
--
-int 100000
-*
-load 11
-load 10
--
-/
-global CurrentApplicationAddress
-txna Assets 0
-asset_holding_get AssetBalance
-bz decline
-*
-int 100000
-/
+callsub calc_withdrawal_amount
 store 1
+
+// only cont if something to send
+load 1
+bz decline
 
 // send ASA
 itxn_begin
@@ -237,25 +217,183 @@ app_global_put
 b approve
 ////////////////
 
+////////////////
+calc_withdrawal_amount:
+
+// if LatestTimestamp <= END, amount is everything
+global LatestTimestamp
+load 11
+<=
+bnz calc_withdrawal_amount_all
+
+// calculate pro-rata
+global LatestTimestamp
+load 10
+-
+int 100000
+*
+load 11
+load 10
+-
+/
+global CurrentApplicationAddress
+txna Assets 0
+asset_holding_get AssetBalance
+bz decline
+*
+int 100000
+/
+retsub
+
+calc_withdrawal_amount_all:
+global CurrentApplicationAddress
+txna Assets 0
+asset_holding_get AssetBalance
+bz decline
+retsub
+////////////////
+
 
 ////////////////
 handle_update:
-// args: end
+// args: END
 
 // only creator can run
+global CreatorAddress
+txn Sender
+==
+assert
+
+// init should have run already
+int 0
+byte "CANCANCEL"
+app_global_get_ex
+assert
+pop
 
 // 1st of 2 txns
+global GroupSize
+int 2
+==
+txn GroupIndex
+int 0
+==
+&&
+assert
 
 // 2nd txn is asset send to this app for ASA in --foreign-asset
+gtxn 1 TypeEnum
+int axfer
+==
+gtxn 1 XferAsset
+txna Assets 0
+==
+&&
+assert
 
 // withdrawal rate cannot worsen
+// old rate = (old_END - START) / old_amount
+// new rate = (new_END - START) / (old_amount + extra_amount)
+// algebra: old_amount*new_END - old_amount*old_END - extra_amount*old_END + extra_amount*START >= 0
 
-// new end is after now and after old end
+// old_amount
+global CurrentApplicationAddress
+txna Assets 0
+asset_holding_get AssetBalance
+bz decline
+store 1
+
+// new_END
+txna ApplicationArgs 1
+btoi
+store 2
+
+// old_END
+byte "END"
+app_global_get
+store 3
+
+// extra_amount
+gtxn 1 AssetAmount
+store 4
+
+// START
+byte "START"
+app_global_get
+store 5
+
+// check equation
+load 1
+load 2
+*
+load 1
+load 3
+*
+-
+load 4
+load 3
+*
+-
+load 4
+load 5
++
+int 0
+>=
+assert
+
+// new end is after now
+txna ApplicationArgs 1
+btoi
+global LatestTimestamp
+>
+bz decline
 
 // update end in global state
+byte "END"
+txna ApplicationArgs 1
+btoi
+app_global_put
 
-// decline until implemented
-b decline
+b approve
+////////////////
+
+////////////////
+handle_cancel:
+
+// only CREATOR can run
+global GroupSize
+int 1
+==
+global CreatorAddress
+txn Sender
+==
+&&
+assert
+
+// CANCANCEL needs to be true
+byte "CANCANCEL"
+app_global_get
+bz decline
+
+// send all ASA to CREATOR
+itxn_begin
+int axfer
+itxn_field TypeEnum
+global CreatorAddress
+itxn_field AssetReceiver
+txna Assets 0
+itxn_field XferAsset
+
+// all coins
+global CurrentApplicationAddress
+txna Assets 0
+asset_holding_get AssetBalance
+bz decline
+itxn_field AssetAmount
+
+itxn_submit
+
+b approve
 ////////////////
 
 ///////////////
@@ -270,8 +408,9 @@ global CreatorAddress
 txn Sender
 ==
 &&
-bnz approve
-b decline
+assert
+
+b approve
 ///////////////
 
 
