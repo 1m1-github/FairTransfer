@@ -161,10 +161,10 @@ b approve
 handle_withdraw:
 
 // single txn
-global GroupSize
-int 1
-==
-assert
+// global GroupSize
+// int 1
+// ==
+// assert
 
 // global to scratch
 byte "BENEFICIARY"
@@ -217,11 +217,11 @@ b approve
 ////////////////
 calc_withdrawal_amount:
 
-// if LatestTimestamp <= END, amount is everything
+// if END <= LatestTimestamp, amount is everything
 global LatestTimestamp
 load 11
-<=
-bnz calc_withdrawal_amount_all
+<
+bz calc_withdrawal_amount_all
 
 // calculate pro-rata
 global LatestTimestamp

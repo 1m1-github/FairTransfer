@@ -17,7 +17,7 @@ goal app info --app-id $CREATE_APP_ID
 goal clerk send --amount 741500 --from $USER --to $CREATE_APP_ACCOUNT --out=$TXNS_DIR/create_send_algo.stxn
 goal app call --app-id=$CREATE_APP_ID --from $USER --app-arg="str:optin" --foreign-asset $ASA --out=$TXNS_DIR/create_optin.stxn
 goal asset send --amount $AMOUNT --assetid $ASA --from $USER --to $CREATE_APP_ACCOUNT --out=$TXNS_DIR/create_send_asa.stxn
-goal app call --app-id=$CREATE_APP_ID --from $USER --app-arg="str:create" --app-arg="int:$CANCANCEL" --app-arg="int:$END" --app-arg="str:AlgoVesting 4 $BENEFICIARY" --app-account="$BENEFICIARY" --foreign-asset $ASA --out=$TXNS_DIR/create_call.stxn
+goal app call --app-id=$CREATE_APP_ID --from $USER --app-arg="str:create" --app-arg="int:$CANCANCEL" --app-arg="int:$END" --app-arg="str:AlgoVesting 4 $BENEFICIARY" --app-arg="str:AlgoVesting by $USER" --app-account="$BENEFICIARY" --foreign-asset $ASA --out=$TXNS_DIR/create_call.stxn
 cat $TXNS_DIR/create_send_algo.stxn $TXNS_DIR/create_optin.stxn $TXNS_DIR/create_send_asa.stxn $TXNS_DIR/create_call.stxn > $TXNS_DIR/combinedtransactions.txn
 goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn
 goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/create.stxn
@@ -38,3 +38,4 @@ goal app create --creator $CREATOR --approval-prog $CREATE_APPROVAL_FILE --clear
 goal clerk send --amount 1000000 --from $CREATOR --to $CREATE_APP_ACCOUNT
 # goal app call --app-id=$CREATE_APP_ID --from $USER --foreign-app 99024788
 goal app call --app-id=$CREATE_APP_ID --from $USER --foreign-asset $ASA
+goal app update --app-id=$CREATE_APP_ID --from=$CREATOR --approval-prog $CREATE_APPROVAL_FILE --clear-prog $SYSTEM_CLEAR_FILE

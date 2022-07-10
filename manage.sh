@@ -55,9 +55,16 @@ goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/i
 goal clerk rawsend --filename $TXNS_DIR/init.stxn
 
 // withdraw
+goal clerk send --amount 1000 --from $BENEFICIARY --to TT33GUBOYYOQW5Z7QEEBWVNXWQZO5SU7L63PUMRQ2J53RWTM5ZUKKQ4TMQ --out=$TXNS_DIR/withdraw_algo.stxn -w $WALLET
+goal app call --app-id=99109783 --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA --out=$TXNS_DIR/withdraw_call.stxn -w $WALLET
+cat $TXNS_DIR/withdraw_algo.stxn $TXNS_DIR/withdraw_call.stxn > $TXNS_DIR/combinedtransactions.txn
+goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn
+goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/withdraw.stxn
+
 goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/withdraw.stxn
+goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA
 goal clerk dryrun -t $TXNS_DIR/withdraw.stxn --dryrun-dump -o $TXNS_DIR/dryrun.json
-tealdbg debug $SYSTEM_APPROVAL_FILE -d $TXNS_DIR/dryrun.json --group-index 0
+tealdbg debug $SYSTEM_APPROVAL_FILE -d $TXNS_DIR/dryrun.json --group-index 1
 
 // update
 goal app call --app-id=APP_ID --from $CREATOR --app-arg="str:update" --app-arg="int:$NEW_END" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/update_call.stxn
