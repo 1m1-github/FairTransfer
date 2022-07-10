@@ -79,13 +79,16 @@ load 1
 itxn_field Receiver
 int 201000
 itxn_field Amount
+itxn_submit
 
 // init new dapp
-itxn_next
+itxn_begin
 int appl
 itxn_field TypeEnum
 itxn CreatedApplicationID
 itxn_field ApplicationID
+byte "init"
+itxn_field ApplicationArgs
 txna ApplicationArgs 0
 itxn_field ApplicationArgs
 txna ApplicationArgs 1

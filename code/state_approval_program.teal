@@ -14,27 +14,27 @@
 // handling ClearState, because the ClearStateProgram will execute in that
 // case, not the ApprovalProgram.
 
-txn OnCompletion
+gtxn 0 OnCompletion
 int NoOp
 ==
 bnz handle_noop
 
-txn OnCompletion
+gtxn 0 OnCompletion
 int OptIn
 ==
 bnz handle_optin
 
-txn OnCompletion
+gtxn 0 OnCompletion
 int CloseOut
 ==
 bnz handle_closeout
 
-txn OnCompletion
+gtxn 0 OnCompletion
 int UpdateApplication
 ==
 bnz handle_updateapp
 
-txn OnCompletion
+gtxn 0 OnCompletion
 int DeleteApplication
 ==
 bnz handle_deleteapp
@@ -47,22 +47,22 @@ b decline
 ////////////////
 handle_noop:
 
-txna ApplicationArgs 0
+gtxna 0 ApplicationArgs 0
 byte "init"
 ==
 bnz handle_init
 
-txna ApplicationArgs 0
+gtxna 0 ApplicationArgs 0
 byte "withdraw"
 ==
 bnz handle_withdraw
 
-txna ApplicationArgs 0
+gtxna 0 ApplicationArgs 0
 byte "update"
 ==
 bnz handle_update
 
-txna ApplicationArgs 0
+gtxna 0 ApplicationArgs 0
 byte "cancel"
 ==
 bnz handle_cancel
@@ -83,43 +83,33 @@ bnz decline
 pop
 
 // only creator can run
-txn Sender
+gtxn 0 Sender
 global CreatorAddress
 ==
 assert
 
-// 1st txn is ALGO send to this app for ASA opt-in
-gtxn 0 TypeEnum
-int pay
-==
-gtxn 0 Amount
-int 201000
-==
-&&
-assert
-
-// 2nd of 2 txns
-txn GroupIndex
+// 1st of 2 txns
+gtxn 0 GroupIndex
 int 1
 ==
 global GroupSize
-int 3
+int 2
 ==
 &&
 assert
 
-// 3rd txn is asset send to this app for ASA in --foreign-asset
-gtxn 2 TypeEnum
+// 2nd txn is asset send to this app for ASA in --foreign-asset
+gtxn 1 TypeEnum
 int axfer
 ==
-gtxn 2 XferAsset
-txna Assets 0
+gtxn 1 XferAsset
+gtxna 0 Assets 0
 ==
 &&
 assert
 
 // end is after now
-txna ApplicationArgs 2
+gtxna 0 ApplicationArgs 2
 btoi
 global LatestTimestamp
 >
@@ -127,7 +117,7 @@ bz decline
 
 // set global state
 byte "CANCANCEL"
-txna ApplicationArgs 1
+gtxna 0 ApplicationArgs 1
 btoi
 app_global_put
 
@@ -136,12 +126,12 @@ global LatestTimestamp
 app_global_put
 
 byte "END"
-txna ApplicationArgs 2
+gtxna 0 ApplicationArgs 2
 btoi
 app_global_put
 
 byte "BENEFICIARY"
-txna Accounts 1
+gtxna 0 Accounts 1
 app_global_put
 
 // opt-into ASA
@@ -150,7 +140,7 @@ int axfer
 itxn_field TypeEnum
 global CurrentApplicationAddress
 itxn_field AssetReceiver
-txna Assets 0
+gtxna 0 Assets 0
 itxn_field XferAsset
 int 0
 itxn_field AssetAmount
