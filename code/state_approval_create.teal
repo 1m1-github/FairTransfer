@@ -29,9 +29,25 @@ bnz handle_deleteapp
 b decline
 ////////////////
 
-
 ////////////////
 handle_noop:
+
+txn ApplicationArgs 0
+byte "optin"
+==
+bnz handle_noop_optin
+
+txn ApplicationArgs 0
+byte "create"
+==
+bnz handle_create
+
+// Unexpected first arg
+b decline
+////////////////
+
+////////////////
+handle_noop_optin:
 
 // opt-into ASA
 itxn_begin
@@ -45,11 +61,17 @@ int 0
 itxn_field AssetAmount
 itxn_submit
 
+b approve
+////////////////
+
+////////////////
+handle_create:
+
 // create new dapp
 itxn_begin
 int appl
 itxn_field TypeEnum
-byte base64 BiAFAAEEAqCNBiYECUNBTkNBTkNFTAVTVEFSVANFTkQLQkVORUZJQ0lBUlkxGSISQAAgMRkjEkAB1jEZJRJAAcwxGSQSQAG3MRmBBRJAAb1CAcA2GgCABGluaXQSQAAyNhoAgAh3aXRoZHJhdxJAAIk2GgCABnVwZGF0ZRJAAOQ2GgCABmNhbmNlbBJAAUNCAYEiKGVAAXtIMQAyCRJEMwAQIxIzAAiBqKIMEhBEMRYjEjIEgQMSEEQzAhAkEjMCETYwABIQRDYaAhcyBw1BAUIoNhoBF2cpMgdnKjYaAhdnKzYcAWexJLIQMgqyFDYwALIRIrISs0IBGzIEIxJEK2Q1AClkNQoqZDULMQA0ABJEiAAgNQE0AUEA+LEkshA0ALIUNjAAshE0AbISsykyB2dCAOEyBzQLDkAAHTIHNAoJIQQLNAs0CgkKMgo2MABwAEEAvwshBAqJMgo2MABwAEEAsIkyCTEAEkQiKGVESDIEJRIxFiISEEQzARAkEjMBETYwABIQRDIKNjAAcABBAII1ATYaARc1AipkNQMzARI1BClkNQU0ATQCCzQBNAMLCTQENAMLCTQENAUIIg9ENhoBFzIHDUEASio2GgEXZ0IAQzIEIxIyCTEAEhBEKGRBADGxJLIQMgmyFDYwALIRMgo2MABwAEEAGrISs0IAFjIEIxIyCTEAEhBEQgAIQgADQgACIkMjQw==
+byte base64 BiAFAAQBAqCNBiYECUNBTkNBTkNFTAVTVEFSVANFTkQLQkVORUZJQ0lBUlkzABkiEkAAJDMAGSQSQAHPMwAZJRJAAcQzABkjEkABrjMAGYEFEkABs0IBtjcAGgCABGluaXQSQAA1NwAaAIAId2l0aGRyYXcSQAB9NwAaAIAGdXBkYXRlEkAA1zcAGgCABmNhbmNlbBJAATVCAXMiKGVAAW1IMwAAMgkSRDIEJRJEMwEQIxIzARE3ADAAEhBENwAaAhcyBw1BAUYoNwAaARdnKTIHZyo3ABoCF2crNwAcAWexI7IQMgqyFDcAMACyESKyErNCARsyBCQSRCtkNQApZDUKKmQ1CzEANAASRIgAIDUBNAFBAPixI7IQNACyFDYwALIRNAGyErMpMgdnQgDhMgc0Cw5AAB0yBzQKCSEECzQLNAoJCjIKNjAAcABBAL8LIQQKiTIKNjAAcABBALCJMgkxABJEIihlREgyBCUSMRYiEhBEMwEQIxIzARE2MAASEEQyCjYwAHAAQQCCNQE2GgEXNQIqZDUDMwESNQQpZDUFNAE0Ags0ATQDCwk0BDQDCwk0BDQFCCIPRDYaARcyBw1BAEoqNhoBF2dCAEMyBCQSMgkxABIQRChkQQAxsSOyEDIJshQ2MACyETIKNjAAcABBABqyErNCABYyBCQSMgkxABIQREIACEIAA0IAAiJDJEM=
 itxn_field ApprovalProgram
 byte base64 BoEB
 itxn_field ClearStateProgram
@@ -67,6 +89,8 @@ itxn_submit
 
 // new dApp addr
 itxn CreatedApplicationID
+store 0
+load 0
 app_params_get AppAddress
 bz decline
 store 1
@@ -85,18 +109,22 @@ itxn_submit
 itxn_begin
 int appl
 itxn_field TypeEnum
-itxn CreatedApplicationID
+load 0
 itxn_field ApplicationID
 byte "init"
 itxn_field ApplicationArgs
-txna ApplicationArgs 0
-itxn_field ApplicationArgs
 txna ApplicationArgs 1
+itxn_field ApplicationArgs
+txna ApplicationArgs 2
 itxn_field ApplicationArgs
 txna Accounts 1
 itxn_field Accounts
 txna Assets 0
 itxn_field Assets
+byte "AlgoVesting 4 "
+txna Accounts 1
+concat
+itxn_field Note
 
 // send dapp asa
 itxn_next

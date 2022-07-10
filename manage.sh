@@ -14,8 +14,8 @@ export TXNS_DIR=./txns
 export SYSTEM_APPROVAL_FILE=$CODE_DIR/state_approval_program.teal
 export SYSTEM_CLEAR_FILE=$CODE_DIR/state_clear_program.teal
 export CREATOR=2I2IXTP67KSNJ5FQXHUJP5WZBX2JTFYEBVTBYFF3UUJ3SQKXSZ3QHZNNPY
-export APP_ID=98989242
-export APP_ACCOUNT=YILUOIY5R2UFKHA4OGLNWNPNOMSJVXMBALND2GQBOB3W3LAJLHOKFHUQBQ
+export APP_ID=99094778
+export APP_ACCOUNT=FZWAB6CXAXWN7NPSY6PUEPQGJUKZJ33NX6UDKQGLTEJZRRRXWI6SS66RKI
 export ASA=92125658
 export CANCANCEL=0
 export END=1657155598
@@ -33,7 +33,7 @@ goal account new -w $WALLET
 goal clerk send -a 1000000 -f $CREATOR -t $A -w $WALLET
 
 // create
-goal app create --creator $CREATOR --approval-prog $SYSTEM_APPROVAL_FILE_TEST --clear-prog $SYSTEM_CLEAR_FILE --global-byteslices 1 --global-ints 3 --local-byteslices 0 --local-ints 0 --on-completion OptIn -w $WALLET
+goal app create --creator $CREATOR --approval-prog $SYSTEM_APPROVAL_FILE --clear-prog $SYSTEM_CLEAR_FILE --global-byteslices 1 --global-ints 3 --local-byteslices 0 --local-ints 0 --on-completion OptIn -w $WALLET
 goal app info --app-id $APP_ID
 
 goal clerk send --amount 100000 --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET

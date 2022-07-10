@@ -75,6 +75,18 @@ b decline
 handle_init:
 // args: init, cancancel, end, beneficiary
 
+// opt-into ASA
+itxn_begin
+int axfer
+itxn_field TypeEnum
+global CurrentApplicationAddress
+itxn_field AssetReceiver
+gtxna 0 Assets 0
+itxn_field XferAsset
+int 0
+itxn_field AssetAmount
+itxn_submit
+
 // only if not run before
 int 0
 byte "CANCANCEL"
@@ -89,13 +101,9 @@ global CreatorAddress
 assert
 
 // 1st of 2 txns
-gtxn 0 GroupIndex
-int 1
-==
 global GroupSize
 int 2
 ==
-&&
 assert
 
 // 2nd txn is asset send to this app for ASA in --foreign-asset
@@ -108,12 +116,23 @@ gtxna 0 Assets 0
 &&
 assert
 
+// DEBUG - bug after
+// gtxna 0 ApplicationArgs 2
+// log
+// global LatestTimestamp
+// itob
+// log
+// b approve
+
 // end is after now
 gtxna 0 ApplicationArgs 2
 btoi
 global LatestTimestamp
 >
 bz decline
+
+// DEBUG
+// b approve
 
 // set global state
 byte "CANCANCEL"
@@ -133,18 +152,6 @@ app_global_put
 byte "BENEFICIARY"
 gtxna 0 Accounts 1
 app_global_put
-
-// opt-into ASA
-itxn_begin
-int axfer
-itxn_field TypeEnum
-global CurrentApplicationAddress
-itxn_field AssetReceiver
-gtxna 0 Assets 0
-itxn_field XferAsset
-int 0
-itxn_field AssetAmount
-itxn_submit
 
 b approve
 
