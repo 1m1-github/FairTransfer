@@ -4,6 +4,10 @@ Smart contract for linear vesting of coins in sec precision
 
 Lock coins in a smart contract that are meant for someone else (an employee, a founder, an investor, a friend etc.) and that person can withdraw coins whenever they want, always pro-rata linearly.
 
+live: https://algovesting-1m1.web.app
+
+about: https://www.youtube.com/watch?v=_wqvB7cByic
+
 ## Example  
 Imagine an employer that locks (budgets) coins for an employee in this smart contract and the employee can withdraw their salary whenever they want. Always fair, get payed no more or less than how much you have worked (timewise).
 
