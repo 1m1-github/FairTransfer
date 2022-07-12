@@ -14,27 +14,27 @@
 // handling ClearState, because the ClearStateProgram will execute in that
 // case, not the ApprovalProgram.
 
-gtxn 0 OnCompletion
+txn OnCompletion
 int NoOp
 ==
 bnz handle_noop
 
-gtxn 0 OnCompletion
+txn OnCompletion
 int OptIn
 ==
 bnz handle_optin
 
-gtxn 0 OnCompletion
+txn OnCompletion
 int CloseOut
 ==
 bnz handle_closeout
 
-gtxn 0 OnCompletion
+txn OnCompletion
 int UpdateApplication
 ==
 bnz handle_updateapp
 
-gtxn 0 OnCompletion
+txn OnCompletion
 int DeleteApplication
 ==
 bnz handle_deleteapp
@@ -47,22 +47,22 @@ b decline
 ////////////////
 handle_noop:
 
-gtxna 0 ApplicationArgs 0
+txna ApplicationArgs 0
 byte "init"
 ==
 bnz handle_init
 
-gtxna 0 ApplicationArgs 0
+txna ApplicationArgs 0
 byte "withdraw"
 ==
 bnz handle_withdraw
 
-gtxna 0 ApplicationArgs 0
+txna ApplicationArgs 0
 byte "update"
 ==
 bnz handle_update
 
-gtxna 0 ApplicationArgs 0
+txna ApplicationArgs 0
 byte "cancel"
 ==
 bnz handle_cancel
@@ -254,12 +254,6 @@ retsub
 ////////////////
 handle_update:
 // args: END
-
-// only creator can run
-global CreatorAddress
-txn Sender
-==
-assert
 
 // init should have run already
 int 0

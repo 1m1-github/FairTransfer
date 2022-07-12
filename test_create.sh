@@ -3,7 +3,7 @@ export CREATE_APP_ACCOUNT=QZDPW4KE356TLAGDJGPCUCU75GIAKYFLGRX3OOOWRQVY5QZTAS23VN
 export USER=BURN3MK23BN3DDV2JVYBL7VYIPBUFCKXQWK5W5ECG5FJMG2QNSGODQBGI4
 export AMOUNT=23
 export CANCANCEL=0
-export END=1657478322
+export END=1657487179
 export BENEFICIARY=FYMC4AQVEVEP4ZJ4G6KRBF5T7O3EJZIISDA2QP4XU2RXGQAGSU6KYILLE4
 
 goal asset send --amount 0 --assetid 92125658 --from $USER --to $USER --wallet $WALLET
@@ -14,7 +14,7 @@ goal app create --creator $CREATOR --approval-prog $CREATE_APPROVAL_FILE --clear
 goal app info --app-id $CREATE_APP_ID
 
 // run
-goal clerk send --amount 741500 --from $USER --to $CREATE_APP_ACCOUNT --out=$TXNS_DIR/create_send_algo.stxn
+goal clerk send --amount 1000000 --from $USER --to $CREATE_APP_ACCOUNT --out=$TXNS_DIR/create_send_algo.stxn
 goal app call --app-id=$CREATE_APP_ID --from $USER --app-arg="str:optin" --foreign-asset $ASA --out=$TXNS_DIR/create_optin.stxn
 goal asset send --amount $AMOUNT --assetid $ASA --from $USER --to $CREATE_APP_ACCOUNT --out=$TXNS_DIR/create_send_asa.stxn
 goal app call --app-id=$CREATE_APP_ID --from $USER --app-arg="str:create" --app-arg="int:$CANCANCEL" --app-arg="int:$END" --app-arg="str:AlgoVesting 4 $BENEFICIARY" --app-arg="str:AlgoVesting by $USER" --app-account="$BENEFICIARY" --foreign-asset $ASA --out=$TXNS_DIR/create_call.stxn

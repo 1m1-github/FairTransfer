@@ -19,10 +19,12 @@ export APP_ACCOUNT=FZWAB6CXAXWN7NPSY6PUEPQGJUKZJ33NX6UDKQGLTEJZRRRXWI6SS66RKI
 export ASA=92125658
 export CANCANCEL=0
 export END=1657155598
-export NEW_END=
+export NEW_END=16576492130
 export BENEFICIARY=FYMC4AQVEVEP4ZJ4G6KRBF5T7O3EJZIISDA2QP4XU2RXGQAGSU6KYILLE4
 export AMOUNT=100
-export NEW_AMOUNT=
+export NEW_AMOUNT=40000
+
+export APP_ID=99369510
 
 // start goal, create wallet and account
 goal node start
@@ -32,49 +34,27 @@ goal wallet new $WALLET
 goal account new -w $WALLET
 goal clerk send -a 1000000 -f $CREATOR -t $A -w $WALLET
 
-// create
-goal app create --creator $CREATOR --approval-prog $SYSTEM_APPROVAL_FILE --clear-prog $SYSTEM_CLEAR_FILE --global-byteslices 1 --global-ints 3 --local-byteslices 0 --local-ints 0 --on-completion OptIn -w $WALLET
-goal app info --app-id $APP_ID
-
-goal clerk send --amount 100000 --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET
-
-// init
-goal clerk send --amount 101000 --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET --out=$TXNS_DIR/init_send_algo.stxn
-goal app call --app-id=$APP_ID --from $CREATOR --app-arg="str:init" --app-arg="int:$CANCANCEL" --app-arg="int:$END" --app-account="$BENEFICIARY" --foreign-asset $ASA --wallet $WALLET --out=$TXNS_DIR/init_call.stxn
-goal asset send --amount $AMOUNT --assetid $ASA --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET --out=$TXNS_DIR/init_send_asa.stxn
-cat $TXNS_DIR/init_send_algo.stxn $TXNS_DIR/init_call.stxn $TXNS_DIR/init_send_asa.stxn > $TXNS_DIR/combinedtransactions.txn
-goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn
-goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/init.stxn -w $WALLET
-goal clerk rawsend --filename $TXNS_DIR/init.stxn
-
-goal app call --app-id=$APP_ID --from $CREATOR --app-arg="str:init" --app-arg="int:$CANCANCEL" --app-arg="int:$END" --app-account="$BENEFICIARY" --foreign-asset $ASA --wallet $WALLET --out=$TXNS_DIR/init_call.stxn
-goal asset send --amount $AMOUNT --assetid $ASA --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET --out=$TXNS_DIR/init_send_asa.stxn
-cat $TXNS_DIR/init_call.stxn $TXNS_DIR/init_send_asa.stxn > $TXNS_DIR/combinedtransactions.txn
-goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn
-goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/init.stxn -w $WALLET
-goal clerk rawsend --filename $TXNS_DIR/init.stxn
-
 // withdraw
-goal clerk send --amount 1000 --from $BENEFICIARY --to TT33GUBOYYOQW5Z7QEEBWVNXWQZO5SU7L63PUMRQ2J53RWTM5ZUKKQ4TMQ --out=$TXNS_DIR/withdraw_algo.stxn -w $WALLET
-goal app call --app-id=99109783 --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA --out=$TXNS_DIR/withdraw_call.stxn -w $WALLET
+goal clerk send --amount 1000 --from $BENEFICIARY --to $APP_ACCOUNT --out=$TXNS_DIR/withdraw_algo.stxn -w $WALLET
+goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA --out=$TXNS_DIR/withdraw_call.stxn -w $WALLET
 cat $TXNS_DIR/withdraw_algo.stxn $TXNS_DIR/withdraw_call.stxn > $TXNS_DIR/combinedtransactions.txn
 goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn
 goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/withdraw.stxn
-
-goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/withdraw.stxn
-goal app call --app-id=$APP_ID --from $BENEFICIARY --app-arg="str:withdraw" --foreign-asset=$ASA
-goal clerk dryrun -t $TXNS_DIR/withdraw.stxn --dryrun-dump -o $TXNS_DIR/dryrun.json
-tealdbg debug $SYSTEM_APPROVAL_FILE -d $TXNS_DIR/dryrun.json --group-index 1
+goal clerk rawsend --filename $TXNS_DIR/withdraw.stxn
 
 // update
-goal app call --app-id=APP_ID --from $CREATOR --app-arg="str:update" --app-arg="int:$NEW_END" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/update_call.stxn
+goal app call --app-id=$APP_ID --from $CREATOR --app-arg="str:update" --app-arg="int:$NEW_END" --foreign-asset=$ASA --wallet $WALLET --out=$TXNS_DIR/update_call.stxn
 goal asset send --amount $NEW_AMOUNT --assetid $ASA --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET --out=$TXNS_DIR/update_send.stxn
 cat $TXNS_DIR/update_call.stxn $TXNS_DIR/update_send.stxn > $TXNS_DIR/combinedtransactions.txn
 goal clerk group --infile $TXNS_DIR/combinedtransactions.txn --outfile $TXNS_DIR/groupedtransactions.txn
 goal clerk sign --infile $TXNS_DIR/groupedtransactions.txn --outfile $TXNS_DIR/update.stxn -w $WALLET
 goal clerk rawsend --filename $TXNS_DIR/update.stxn
 
+// cancel
+goal app call --app-id=$APP_ID --from $CREATOR --app-arg="str:cancel" --wallet $WALLET
+
 // debug
+goal clerk send --amount 100000 --from $CREATOR --to $APP_ACCOUNT --wallet $WALLET
 goal clerk dryrun -t $TXNS_DIR/init.stxn --dryrun-dump -o $TXNS_DIR/dryrun.json
 tealdbg debug $SYSTEM_APPROVAL_FILE -d $TXNS_DIR/dryrun.json --group-index 0
 // update - disabled in prod

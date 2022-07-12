@@ -49,6 +49,32 @@ b decline
 ////////////////
 handle_noop_optin:
 
+// checks
+int pay
+gtxn 0 TypeEnum
+==
+gtxn 0 Amount
+int 1000000
+==
+gtxn 0 Receiver
+global CurrentApplicationAddress
+==
+gtxna 3 ApplicationArgs 0
+byte "create"
+==
+global GroupSize
+int 4
+==
+txn GroupIndex
+int 1
+==
+&&
+&&
+&&
+&&
+&&
+assert
+
 // opt-into ASA
 itxn_begin
 int axfer
@@ -67,11 +93,37 @@ b approve
 ////////////////
 handle_create:
 
+// checks
+int pay
+gtxn 0 TypeEnum
+==
+gtxn 0 Amount
+int 1000000
+==
+gtxn 0 Receiver
+global CurrentApplicationAddress
+==
+gtxna 1 ApplicationArgs 0
+byte "optin"
+==
+global GroupSize
+int 4
+==
+txn GroupIndex
+int 3
+==
+&&
+&&
+&&
+&&
+&&
+assert
+
 // create new dapp
 itxn_begin
 int appl
 itxn_field TypeEnum
-byte base64 BiAFAAQBAqCNBiYECUNBTkNBTkNFTAVTVEFSVANFTkQLQkVORUZJQ0lBUlkzABkiEkAAJDMAGSQSQAHKMwAZJRJAAb8zABkjEkABqTMAGYEFEkABrkIBsTcAGgCABGluaXQSQAA1NwAaAIAId2l0aGRyYXcSQAB9NwAaAIAGdXBkYXRlEkAA0jcAGgCABmNhbmNlbBJAATBCAW6xI7IQMgqyFDcAMACyESKyErMiKGVAAVZIMwAAMgkSRDIEJRJEMwEQIxIzARE3ADAAEhBENwAaAhcyBw1BAS8oNwAaARdnKTIHZyo3ABoCF2crNwAcAWdCARYrZDUAKWQ1CipkNQsxADQAEkSIACA1ATQBQQD4sSOyEDQAshQ2MACyETQBshKzKTIHZ0IA4TIHNAsMQQAdMgc0CgkhBAs0CzQKCQoyCjYwAHAAQQC/CyEECokyCjYwAHAAQQCwiTIJMQASRCIoZURIMgQlEjEWIhIQRDMBECMSMwERNjAAEhBEMgo2MABwAEEAgjUBNhoBFzUCKmQ1AzMBEjUEKWQ1BTQBNAMLNAE0AgsJNAQ0AwsINAQ0BQkiD0Q2GgEXMgcNQQBKKjYaARdnQgBDMgQkEjIJMQASEEQoZEEAMbEjshAyCbIUNjAAshEyCjYwAHAAQQAashKzQgAWMgQkEjIJMQASEERCAAhCAANCAAIiQyRD
+byte base64 BiAFAAQBAqCNBiYECUNBTkNBTkNFTAVTVEFSVANFTkQLQkVORUZJQ0lBUlkxGSISQAAgMRkkEkABwzEZJRJAAbkxGSMSQAGkMRmBBRJAAapCAa02GgCABGluaXQSQAAyNhoAgAh3aXRoZHJhdxJAAHs2GgCABnVwZGF0ZRJAANE2GgCABmNhbmNlbBJAATBCAW6xI7IQMgqyFDcAMACyESKyErMiKGVAAVZIMwAAMgkSRDIEJRJEMwEQIxIzARE3ADAAEhBENwAaAhcyBw1BAS8oNwAaARdnKTIHZyo3ABoCF2crNwAcAWdCARYrZDUAKWQ1CipkNQsxADQAEkSIACA1ATQBQQD4sSOyEDQAshQ2MACyETQBshKzKTIHZ0IA4TIHNAsMQQAdMgc0CgkhBAs0CzQKCQoyCjYwAHAAQQC/CyEECokyCjYwAHAAQQCwiTIJMQASRCIoZURIMgQlEjEWIhIQRDMBECMSMwERNjAAEhBEMgo2MABwAEEAgjUBNhoBFzUCKmQ1AzMBEjUEKWQ1BTQBNAMLNAE0AgsJNAQ0AwsINAQ0BQkiD0Q2GgEXMgcNQQBKKjYaARdnQgBDMgQkEjIJMQASEEQoZEEAMbEjshAyCbIUNjAAshEyCjYwAHAAQQAashKzQgAWMgQkEjIJMQASEERCAAhCAANCAAIiQyRD
 itxn_field ApprovalProgram
 byte base64 BoEB
 itxn_field ClearStateProgram
