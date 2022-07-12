@@ -44,4 +44,6 @@ This smart contract thus allows for the "fairest" possible compensation.
 - `beneficiary` is set by the `creator` - a single account
 
 
+frontend code: https://github.com/1m1-github/AlgoVestingFrontend
+
 uc ~ UnderContruction
