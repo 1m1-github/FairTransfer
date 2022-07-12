@@ -1,4 +1,5 @@
-# AlgoVesting
+# AlgoVesting ~ delay coins linearly
+
 Smart contract for linear vesting of coins in sec precision
 
 Lock coins in a smart contract that are meant for someone else (an employee, a founder, an investor, a friend etc.) and that person can withdraw coins whenever they want, always pro-rata linearly.
