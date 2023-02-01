@@ -47,3 +47,7 @@ This smart contract thus allows for the "fairest" possible compensation.
 frontend code: https://github.com/1m1-github/AlgoVestingFrontend
 
 uc ~ UnderContruction
+
+## Notes
+
+NOT AUDITED YET ~ CAN BE DONE IF THERE IS INTEREST
