@@ -1,4 +1,4 @@
-# AlgoVesting ~ delay coins linearly
+# FairVesting ~ delay coins linearly
 
 Smart contract for linear vesting of coins in sec precision
 
