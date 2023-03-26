@@ -1,4 +1,8 @@
-# FairVesting ~ delay coins linearly
+# FairVesting
+
+= credit risk free energy transfer
+
+= delay coins linearly
 
 Smart contract for linear vesting of coins in sec precision
 
