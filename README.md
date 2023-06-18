@@ -1,4 +1,4 @@
-# FairVesting
+# FairTransfer
 
 = credit risk free energy transfer
 
